@@ -9,8 +9,9 @@ interface Props {
 
 export default function StatementUpload({ onExtracted, onManual }: Props) {
   const [status, setStatus] = useState<
-    "idle" | "reading" | "extracting" | "error"
+    "idle" | "reading" | "ocr" | "extracting" | "error"
   >("idle");
+  const [progressMsg, setProgressMsg] = useState("");
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,18 +26,23 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
     try {
       setStatus("reading");
       setError("");
-      const text = await extractTextFromPdf(file);
+      setProgressMsg("");
 
-      if (text.trim().length < 50) {
+      const result = await extractTextFromPdf(file, (msg) => {
+        setStatus("ocr");
+        setProgressMsg(msg);
+      });
+
+      if (result.text.trim().length < 50) {
         setError(
-          "Could not extract enough text from this PDF. It may be a scanned image — try a digital statement instead."
+          "Could not extract enough text from this PDF even with OCR. The file may be corrupted or not a credit card statement."
         );
         setStatus("error");
         return;
       }
 
       setStatus("extracting");
-      const fields = await extractStatement(text);
+      const fields = await extractStatement(result.text);
       onExtracted(fields);
     } catch (e) {
       setError(String(e));
@@ -86,7 +92,9 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
             <p className="font-medium text-gray-700">
               Drop a credit card statement PDF here
             </p>
-            <p className="text-sm text-gray-400 mt-1">or click to browse</p>
+            <p className="text-sm text-gray-400 mt-1">
+              or click to browse — works with digital and scanned statements
+            </p>
           </>
         )}
 
@@ -94,6 +102,16 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
           <div>
             <div className="text-4xl mb-3 animate-pulse">&#128196;</div>
             <p className="text-gray-600">Reading PDF...</p>
+          </div>
+        )}
+
+        {status === "ocr" && (
+          <div>
+            <div className="text-4xl mb-3 animate-pulse">&#128065;</div>
+            <p className="text-gray-600">{progressMsg || "Running OCR..."}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              This takes longer for scanned documents
+            </p>
           </div>
         )}
 
