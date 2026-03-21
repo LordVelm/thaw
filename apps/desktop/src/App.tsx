@@ -6,6 +6,7 @@ import SetupScreen from "./components/SetupScreen";
 import StatementUpload from "./components/StatementUpload";
 import ReviewExtraction from "./components/ReviewExtraction";
 import AccountForm from "./components/AccountForm";
+import BudgetCalculator from "./components/BudgetCalculator";
 import PlanResults from "./components/PlanResults";
 
 type View = "loading" | "setup" | "main";
@@ -13,7 +14,7 @@ type View = "loading" | "setup" | "main";
 export default function App() {
   const [view, setView] = useState<View>("loading");
   const [accounts, setAccounts] = useState<DebtAccount[]>([]);
-  const [monthlyBudget, setMonthlyBudget] = useState("");
+  const [debtBudget, setDebtBudget] = useState(0);
   const [results, setResults] = useState<{
     avalanche: PlanResult;
     snowball: PlanResult;
@@ -32,7 +33,6 @@ export default function App() {
         setView("setup");
       }
     }).catch(() => {
-      // If Tauri commands aren't available (dev in browser), skip setup
       setView("main");
     });
   }, []);
@@ -49,16 +49,17 @@ export default function App() {
     setResults(null);
   }
 
-  function runPlan() {
-    const budget = parseFloat(monthlyBudget);
-    if (isNaN(budget) || budget <= 0 || accounts.length === 0) return;
+  function handleBudgetCalculated(availableForDebt: number) {
+    setDebtBudget(availableForDebt);
+    if (availableForDebt <= 0 || accounts.length === 0) return;
+
     const avalanche = generatePlan({
-      monthlyBudget: budget,
+      monthlyBudget: availableForDebt,
       strategy: "avalanche",
       accounts,
     });
     const snowball = generatePlan({
-      monthlyBudget: budget,
+      monthlyBudget: availableForDebt,
       strategy: "snowball",
       accounts,
     });
@@ -89,7 +90,10 @@ export default function App() {
 
       {/* Upload / Extraction section */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Add Account</h2>
+        <h2 className="text-lg font-semibold mb-3">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">1</span>
+          Add Your Accounts
+        </h2>
 
         {extractedFields ? (
           <ReviewExtraction
@@ -170,45 +174,33 @@ export default function App() {
         </section>
       )}
 
-      {/* Budget + Calculate */}
+      {/* Budget Calculator */}
       {accounts.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Monthly Budget</h2>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center">
-              <span className="text-gray-500 mr-1">$</span>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={monthlyBudget}
-                onChange={(e) => setMonthlyBudget(e.target.value)}
-                placeholder="e.g. 500"
-                className="border border-gray-300 rounded px-3 py-2 w-40"
-              />
-            </div>
-            <button
-              onClick={runPlan}
-              disabled={!monthlyBudget || parseFloat(monthlyBudget) <= 0}
-              className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Calculate Plan
-            </button>
-          </div>
-          {totalMinimum > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              Minimum required: ${totalMinimum.toFixed(2)}/mo
-            </p>
-          )}
+          <h2 className="text-lg font-semibold mb-3">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">2</span>
+            Build Your Budget
+          </h2>
+          <BudgetCalculator
+            totalMinimumPayments={totalMinimum}
+            onBudgetCalculated={handleBudgetCalculated}
+          />
         </section>
       )}
 
+      {/* Plan Results */}
       {results && (
-        <PlanResults
-          results={results}
-          accounts={accounts}
-          monthlyBudget={parseFloat(monthlyBudget) || 0}
-        />
+        <section>
+          <h2 className="text-lg font-semibold mb-3">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">3</span>
+            Your Payoff Plan
+          </h2>
+          <PlanResults
+            results={results}
+            accounts={accounts}
+            monthlyBudget={debtBudget}
+          />
+        </section>
       )}
     </div>
   );
