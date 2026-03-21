@@ -55,7 +55,6 @@ export default function App() {
         setView("main");
       }
 
-      // Load accounts from DB
       try {
         const saved = await dbGetAccounts();
         if (saved.length > 0) {
@@ -73,7 +72,6 @@ export default function App() {
         // DB not available (browser dev mode)
       }
 
-      // Load budget from DB
       try {
         const budget = await dbGetBudget();
         if (budget.income > 0) {
@@ -93,27 +91,24 @@ export default function App() {
     init();
   }, []);
 
-  const addAccount = useCallback(
-    async (account: DebtAccount) => {
-      setAccounts((prev) => [...prev, account]);
-      setExtractedFields(null);
-      setShowManualForm(false);
-      setResults(null);
+  const addAccount = useCallback(async (account: DebtAccount) => {
+    setAccounts((prev) => [...prev, account]);
+    setExtractedFields(null);
+    setShowManualForm(false);
+    setResults(null);
 
-      try {
-        await dbSaveAccount({
-          id: account.id,
-          name: account.name,
-          balance: account.balance,
-          apr: account.apr,
-          minimumPayment: account.minimumPayment,
-        });
-      } catch {
-        // DB not available
-      }
-    },
-    []
-  );
+    try {
+      await dbSaveAccount({
+        id: account.id,
+        name: account.name,
+        balance: account.balance,
+        apr: account.apr,
+        minimumPayment: account.minimumPayment,
+      });
+    } catch {
+      // DB not available
+    }
+  }, []);
 
   const removeAccount = useCallback(async (id: string) => {
     setAccounts((prev) => prev.filter((a) => a.id !== id));
@@ -177,35 +172,58 @@ export default function App() {
 
   const totalDebt = accounts.reduce((sum, a) => sum + a.balance, 0);
   const totalMinimum = accounts.reduce((sum, a) => sum + a.minimumPayment, 0);
+  const hasAccounts = accounts.length > 0;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-bold">Debt Planner</h1>
+    <div className="max-w-3xl mx-auto px-6 py-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Debt Planner</h1>
+          <p className="text-sm text-gray-400">
+            Your data stays on your computer. Always.
+          </p>
+        </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="text-gray-400 hover:text-gray-600 text-xl p-1"
+          className="text-gray-300 hover:text-gray-500 text-xl p-2 rounded-lg hover:bg-warm-100 transition-colors"
           title="Settings"
         >
           &#9881;
         </button>
       </div>
-      <p className="text-sm text-gray-500 mb-6">
-        For planning &amp; education only — not financial advice.
-      </p>
 
       {showSettings && (
         <SettingsPanel onClose={() => setShowSettings(false)} />
       )}
 
+      {/* Welcome — only when no accounts */}
+      {!hasAccounts && !extractedFields && !showManualForm && (
+        <div className="mt-8 mb-10 text-center">
+          <p className="text-4xl mb-4">&#127793;</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            You're taking the first step
+          </h2>
+          <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+            That takes courage. Let's look at where you stand and build a clear
+            plan to get you out of debt — one month at a time.
+          </p>
+        </div>
+      )}
+
       {/* Upload / Extraction section */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">
-            1
-          </span>
-          Add Your Accounts
-        </h2>
+        {!hasAccounts && !extractedFields && !showManualForm && (
+          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+            Let's start with your statements
+          </h2>
+        )}
+
+        {hasAccounts && !extractedFields && !showManualForm && (
+          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+            Add another account
+          </h2>
+        )}
 
         {extractedFields ? (
           <ReviewExtraction
@@ -232,35 +250,54 @@ export default function App() {
       </section>
 
       {/* Accounts table */}
-      {accounts.length > 0 && (
+      {hasAccounts && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Your Accounts</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-gray-200 rounded">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="text-left px-3 py-2">Name</th>
-                  <th className="text-right px-3 py-2">Balance</th>
-                  <th className="text-right px-3 py-2">APR</th>
-                  <th className="text-right px-3 py-2">Min Payment</th>
-                  <th className="px-3 py-2"></th>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Your accounts
+            </h2>
+            <p className="text-sm text-gray-400">
+              {accounts.length} account{accounts.length !== 1 ? "s" : ""} &middot;{" "}
+              ${totalDebt.toLocaleString("en-US", { minimumFractionDigits: 2 })} total
+            </p>
+          </div>
+          <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="text-right px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">
+                    Balance
+                  </th>
+                  <th className="text-right px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">
+                    APR
+                  </th>
+                  <th className="text-right px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">
+                    Min Payment
+                  </th>
+                  <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {accounts.map((a) => (
-                  <tr key={a.id} className="border-t border-gray-200">
-                    <td className="px-3 py-2">{a.name}</td>
-                    <td className="px-3 py-2 text-right">
-                      ${a.balance.toFixed(2)}
+                  <tr
+                    key={a.id}
+                    className="border-b border-gray-50 hover:bg-warm-50 transition-colors"
+                  >
+                    <td className="px-4 py-3 font-medium">{a.name}</td>
+                    <td className="px-4 py-3 text-right">
+                      ${a.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="px-3 py-2 text-right">{a.apr}%</td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-4 py-3 text-right">{a.apr}%</td>
+                    <td className="px-4 py-3 text-right">
                       ${a.minimumPayment.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => removeAccount(a.id)}
-                        className="text-red-500 hover:text-red-700 text-xs"
+                        className="text-gray-300 hover:text-red-400 text-xs transition-colors"
                       >
                         Remove
                       </button>
@@ -268,33 +305,26 @@ export default function App() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50 font-medium">
-                <tr className="border-t border-gray-300">
-                  <td className="px-3 py-2">Total</td>
-                  <td className="px-3 py-2 text-right">
-                    ${totalDebt.toFixed(2)}
-                  </td>
-                  <td className="px-3 py-2"></td>
-                  <td className="px-3 py-2 text-right">
-                    ${totalMinimum.toFixed(2)}
-                  </td>
-                  <td></td>
-                </tr>
-              </tfoot>
             </table>
           </div>
+
+          {accounts.length === 1 && (
+            <p className="text-sm text-gray-400 mt-3 text-center">
+              Have more cards? Add them all for the most accurate plan.
+            </p>
+          )}
         </section>
       )}
 
       {/* Budget Calculator */}
-      {accounts.length > 0 && (
+      {hasAccounts && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">
-              2
-            </span>
-            Build Your Budget
+          <h2 className="text-lg font-semibold text-gray-700 mb-1">
+            What can you put toward debt?
           </h2>
+          <p className="text-sm text-gray-400 mb-3">
+            Let's figure out your real number — no guessing.
+          </p>
           <BudgetCalculator
             totalMinimumPayments={totalMinimum}
             initialIncome={savedIncome}
@@ -307,13 +337,7 @@ export default function App() {
 
       {/* Plan Results */}
       {results && (
-        <section>
-          <h2 className="text-lg font-semibold mb-3">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">
-              3
-            </span>
-            Your Payoff Plan
-          </h2>
+        <section className="mb-8">
           <PlanResults
             results={results}
             accounts={accounts}
@@ -323,7 +347,7 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="mt-12 pt-6 border-t border-gray-100 text-center">
+      <footer className="mt-12 pt-6 border-t border-warm-200 text-center space-y-3">
         <a
           href="https://buymeacoffee.com/lordvelm"
           target="_blank"
@@ -333,9 +357,9 @@ export default function App() {
           <span className="text-lg">&#9749;</span>
           Buy me a coffee
         </a>
-        <p className="text-xs text-gray-400 mt-3">
-          Debt Planner is free and open source. Your data never leaves your
-          computer.
+        <p className="text-xs text-gray-300">
+          Free and open source. Not financial advice. Your data never leaves
+          your computer.
         </p>
       </footer>
     </div>

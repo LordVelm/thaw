@@ -10,10 +10,10 @@ const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   { key: "rent", label: "Rent / Mortgage", placeholder: "1200" },
   { key: "utilities", label: "Utilities (electric, water, gas, internet)", placeholder: "200" },
   { key: "groceries", label: "Groceries", placeholder: "400" },
-  { key: "transportation", label: "Transportation (car payment, gas, insurance)", placeholder: "350" },
+  { key: "transportation", label: "Transportation (car, gas, insurance)", placeholder: "350" },
   { key: "insurance", label: "Insurance (health, life, etc.)", placeholder: "150" },
   { key: "subscriptions", label: "Subscriptions & memberships", placeholder: "50" },
-  { key: "other", label: "Other expenses", placeholder: "0" },
+  { key: "other", label: "Other monthly expenses", placeholder: "0" },
 ];
 
 interface Props {
@@ -48,7 +48,6 @@ export default function BudgetCalculator({
   });
   const [expanded, setExpanded] = useState(true);
 
-  // Update state if initial values change (loaded from DB)
   useEffect(() => {
     if (initialIncome && initialIncome > 0) {
       setIncome(initialIncome.toString());
@@ -93,9 +92,9 @@ export default function BudgetCalculator({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-1">
-        <h2 className="text-lg font-semibold">Budget Calculator</h2>
+        <h3 className="font-semibold text-gray-800">Budget Calculator</h3>
         <button
           onClick={() => setExpanded(!expanded)}
           className="text-xs text-gray-400 hover:text-gray-600"
@@ -103,9 +102,9 @@ export default function BudgetCalculator({
           {expanded ? "Collapse" : "Expand"}
         </button>
       </div>
-      <p className="text-xs text-gray-500 mb-4">
-        Enter your take-home income and monthly expenses to see how much you can
-        put toward debt.
+      <p className="text-xs text-gray-400 mb-5">
+        Start with what comes in, subtract what goes out. Whatever's left is
+        your debt-fighting power.
       </p>
 
       {expanded && (
@@ -113,7 +112,7 @@ export default function BudgetCalculator({
           {/* Income */}
           <div className="mb-5">
             <label className="flex flex-col text-sm text-gray-700">
-              <span className="font-medium mb-1">Monthly Take-Home Income</span>
+              <span className="font-medium mb-1">Monthly take-home pay</span>
               <div className="flex items-center">
                 <span className="text-gray-400 mr-1 text-lg">$</span>
                 <input
@@ -123,20 +122,23 @@ export default function BudgetCalculator({
                   value={income}
                   onChange={(e) => setIncome(e.target.value)}
                   placeholder="e.g. 4500"
-                  className="border border-gray-300 rounded px-3 py-2 w-48 text-base"
+                  className="border border-gray-200 rounded-lg px-3 py-2.5 w-48 text-base focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all"
                 />
               </div>
               <span className="text-xs text-gray-400 mt-1">
-                After taxes — what hits your bank account
+                After taxes — what actually hits your bank account
               </span>
             </label>
           </div>
 
           {/* Expenses */}
           <div className="mb-5">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              Monthly Living Expenses
-            </h3>
+            <h4 className="text-sm font-medium text-gray-700 mb-1">
+              Monthly living expenses
+            </h4>
+            <p className="text-xs text-gray-400 mb-3">
+              Don't stress about being exact — rough estimates work great here.
+            </p>
             <div className="grid grid-cols-2 gap-3">
               {EXPENSE_CATEGORIES.map((cat) => (
                 <label
@@ -153,7 +155,7 @@ export default function BudgetCalculator({
                       value={expenses[cat.key] ?? ""}
                       onChange={(e) => handleExpense(cat.key, e.target.value)}
                       placeholder={cat.placeholder}
-                      className="border border-gray-300 rounded px-2.5 py-1.5 w-full text-sm text-gray-900"
+                      className="border border-gray-200 rounded-lg px-2.5 py-1.5 w-full text-sm text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all"
                     />
                   </div>
                 </label>
@@ -164,7 +166,7 @@ export default function BudgetCalculator({
       )}
 
       {/* Summary */}
-      <div className="border-t border-gray-200 pt-4 space-y-2">
+      <div className="bg-warm-50 rounded-lg p-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Monthly income</span>
           <span className={incomeNum > 0 ? "font-medium" : "text-gray-300"}>
@@ -174,17 +176,19 @@ export default function BudgetCalculator({
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Living expenses</span>
           <span
-            className={totalExpenses > 0 ? "font-medium text-red-600" : "text-gray-300"}
+            className={totalExpenses > 0 ? "font-medium text-gray-600" : "text-gray-300"}
           >
             {totalExpenses > 0 ? `- ${fmt(totalExpenses)}` : "—"}
           </span>
         </div>
-        <div className="flex justify-between text-base border-t border-gray-100 pt-2">
-          <span className="font-semibold text-gray-700">Available for debt</span>
+        <div className="flex justify-between text-base border-t border-warm-200 pt-2">
+          <span className="font-semibold text-gray-700">
+            Available for debt
+          </span>
           <span
             className={`font-bold ${
               availableForDebt > 0 && availableForDebt >= totalMinimumPayments
-                ? "text-green-700"
+                ? "text-brand-600"
                 : availableForDebt > 0
                 ? "text-amber-600"
                 : "text-gray-300"
@@ -195,14 +199,14 @@ export default function BudgetCalculator({
         </div>
 
         {incomeNum > 0 && totalMinimumPayments > 0 && shortfall > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
-            <p className="text-sm text-red-800 font-medium">
-              You're {fmt(shortfall)} short of covering minimum payments
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
+            <p className="text-sm text-amber-800 font-medium">
+              Let's find {fmt(shortfall)} more to cover your minimums
             </p>
-            <p className="text-xs text-red-600 mt-1">
-              Your combined minimums are {fmt(totalMinimumPayments)}/mo. Review
-              your expenses above to find areas to cut, or consider contacting
-              your card issuers about hardship programs.
+            <p className="text-xs text-amber-700 mt-1">
+              Your combined minimums are {fmt(totalMinimumPayments)}/mo. Take
+              another look at your expenses — even small cuts add up. You can
+              also call your card issuers and ask about hardship programs.
             </p>
           </div>
         )}
@@ -210,22 +214,23 @@ export default function BudgetCalculator({
         {incomeNum > 0 &&
           availableForDebt > 0 &&
           availableForDebt >= totalMinimumPayments && (
-            <p className="text-xs text-green-700 mt-1">
-              Covers your {fmt(totalMinimumPayments)}/mo in minimums with{" "}
-              {fmt(availableForDebt - totalMinimumPayments)} extra to accelerate
-              payoff.
+            <p className="text-xs text-brand-600 mt-1">
+              You've got {fmt(availableForDebt - totalMinimumPayments)} beyond
+              minimums to accelerate your payoff. Every extra dollar counts.
             </p>
           )}
       </div>
 
       {/* Calculate button */}
-      <div className="mt-4">
+      <div className="mt-5">
         <button
           onClick={handleCalculate}
           disabled={incomeNum <= 0 || availableForDebt <= 0}
-          className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed w-full"
+          className="bg-brand-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed w-full transition-colors shadow-sm"
         >
-          Calculate Payoff Plan with {availableForDebt > 0 ? fmt(availableForDebt) : "$0"}/mo
+          {availableForDebt > 0
+            ? `Show my payoff plan with ${fmt(availableForDebt)}/mo`
+            : "Enter your income to get started"}
         </button>
       </div>
     </div>

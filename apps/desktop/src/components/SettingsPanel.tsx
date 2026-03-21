@@ -17,9 +17,7 @@ export default function SettingsPanel({ onClose }: Props) {
   useEffect(() => {
     getGpuStatus()
       .then(setGpu)
-      .catch(() => {
-        // Not available in browser dev mode
-      });
+      .catch(() => {});
   }, []);
 
   async function handleToggle() {
@@ -39,39 +37,51 @@ export default function SettingsPanel({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-start justify-center pt-24 z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Settings</h2>
+    <div className="fixed inset-0 bg-black/20 flex items-start justify-center pt-24 z-50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-semibold text-gray-800">Settings</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="text-gray-300 hover:text-gray-500 text-xl leading-none transition-colors"
           >
             &times;
           </button>
         </div>
 
         {/* GPU Section */}
-        <div className="border border-gray-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            AI Acceleration
+        <div className="border border-gray-100 rounded-xl p-4 bg-warm-50">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">
+            AI speed
           </h3>
 
           {gpu === null ? (
-            <p className="text-xs text-gray-400">Loading GPU status...</p>
+            <p className="text-xs text-gray-400">Checking your hardware...</p>
           ) : (
             <>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">NVIDIA GPU</span>
-                  <span className={gpu.gpuDetected ? "text-green-600 font-medium" : "text-gray-400"}>
-                    {gpu.gpuDetected ? "Detected" : "Not detected"}
+                  <span
+                    className={
+                      gpu.gpuDetected
+                        ? "text-green-600 font-medium"
+                        : "text-gray-400"
+                    }
+                  >
+                    {gpu.gpuDetected ? "Detected" : "Not found"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">CUDA build</span>
-                  <span className={gpu.cudaBuild ? "text-green-600 font-medium" : "text-gray-400"}>
-                    {gpu.cudaBuild ? "Installed" : "Not installed"}
+                  <span className="text-gray-500">GPU acceleration</span>
+                  <span
+                    className={
+                      gpu.cudaBuild
+                        ? "text-green-600 font-medium"
+                        : "text-gray-400"
+                    }
+                  >
+                    {gpu.cudaBuild ? "Available" : "Not available"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -80,13 +90,15 @@ export default function SettingsPanel({ onClose }: Props) {
                     onClick={handleToggle}
                     disabled={!gpu.cudaBuild || toggling}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      gpu.usingGpu
-                        ? "bg-blue-600"
-                        : "bg-gray-300"
-                    } ${(!gpu.cudaBuild || toggling) ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                      gpu.usingGpu ? "bg-brand-500" : "bg-gray-300"
+                    } ${
+                      !gpu.cudaBuild || toggling
+                        ? "opacity-40 cursor-not-allowed"
+                        : "cursor-pointer"
+                    }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
                         gpu.usingGpu ? "translate-x-6" : "translate-x-1"
                       }`}
                     />
@@ -95,38 +107,38 @@ export default function SettingsPanel({ onClose }: Props) {
               </div>
 
               {!gpu.gpuDetected && (
-                <p className="text-xs text-gray-400 mt-2">
-                  No NVIDIA GPU detected. AI runs on CPU, which is slower but
-                  works fine.
+                <p className="text-xs text-gray-400 mt-3">
+                  No GPU found — that's totally fine. Everything works on CPU,
+                  just a bit slower for statement reading.
                 </p>
               )}
 
               {gpu.gpuDetected && !gpu.cudaBuild && (
-                <p className="text-xs text-amber-600 mt-2">
-                  GPU detected but CPU build is installed. To use GPU, delete the
-                  AI engine files and re-run setup.
+                <p className="text-xs text-amber-600 mt-3">
+                  GPU found but the CPU version is installed. To switch, remove
+                  the AI files and re-run setup.
                 </p>
               )}
 
               {toggling && (
-                <p className="text-xs text-blue-600 mt-2 animate-pulse">
-                  Restarting AI engine...
+                <p className="text-xs text-brand-600 mt-3 animate-pulse">
+                  Restarting the AI engine...
                 </p>
               )}
 
               {error && (
-                <p className="text-xs text-red-600 mt-2">{error}</p>
+                <p className="text-xs text-amber-600 mt-3">{error}</p>
               )}
             </>
           )}
         </div>
 
-        <div className="mt-4 text-right">
+        <div className="mt-5 text-right">
           <button
             onClick={onClose}
-            className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2"
+            className="text-sm text-gray-400 hover:text-gray-600 px-4 py-2 transition-colors"
           >
-            Close
+            Done
           </button>
         </div>
       </div>

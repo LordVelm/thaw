@@ -18,7 +18,7 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
 
   async function processFile(file: File) {
     if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file.");
+      setError("That doesn't look like a PDF. Try a different file?");
       setStatus("error");
       return;
     }
@@ -35,7 +35,7 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
 
       if (result.text.trim().length < 50) {
         setError(
-          "Could not extract enough text from this PDF even with OCR. The file may be corrupted or not a credit card statement."
+          "We couldn't read enough from this PDF. It might be corrupted or not a credit card statement. You can always enter your details by hand."
         );
         setStatus("error");
         return;
@@ -80,20 +80,20 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
+        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
           dragOver
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-300 hover:border-gray-400 bg-white"
+            ? "border-brand-400 bg-brand-50"
+            : "border-gray-200 hover:border-brand-300 hover:bg-warm-50 bg-white"
         }`}
       >
         {status === "idle" && (
           <>
-            <div className="text-4xl mb-3 text-gray-400">&#128196;</div>
+            <div className="text-4xl mb-3 text-gray-300">&#128196;</div>
             <p className="font-medium text-gray-700">
-              Drop a credit card statement PDF here
+              Drop a credit card statement here
             </p>
             <p className="text-sm text-gray-400 mt-1">
-              or click to browse — works with digital and scanned statements
+              or click to browse — digital and scanned PDFs both work
             </p>
           </>
         )}
@@ -101,16 +101,18 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
         {status === "reading" && (
           <div>
             <div className="text-4xl mb-3 animate-pulse">&#128196;</div>
-            <p className="text-gray-600">Reading PDF...</p>
+            <p className="text-gray-600">Reading your statement...</p>
           </div>
         )}
 
         {status === "ocr" && (
           <div>
             <div className="text-4xl mb-3 animate-pulse">&#128065;</div>
-            <p className="text-gray-600">{progressMsg || "Running OCR..."}</p>
+            <p className="text-gray-600">
+              {progressMsg || "Scanning your document..."}
+            </p>
             <p className="text-xs text-gray-400 mt-1">
-              This takes longer for scanned documents
+              Scanned PDFs take a bit longer — hang tight
             </p>
           </div>
         )}
@@ -119,18 +121,20 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
           <div>
             <div className="text-4xl mb-3 animate-pulse">&#129302;</div>
             <p className="text-gray-600">
-              AI is extracting account details...
+              Pulling out the important numbers...
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              This may take a moment on first run
+              Almost there
             </p>
           </div>
         )}
 
         {status === "error" && (
           <div>
-            <p className="text-red-600 text-sm mb-2">{error}</p>
-            <p className="text-gray-500 text-sm">Click to try another file</p>
+            <p className="text-amber-600 text-sm mb-2">{error}</p>
+            <p className="text-gray-400 text-sm">
+              Click to try another file
+            </p>
           </div>
         )}
       </div>
@@ -139,7 +143,7 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
         onClick={onManual}
         className="text-sm text-gray-400 hover:text-gray-600 mt-3 underline"
       >
-        or add account manually
+        I'd rather type it in myself
       </button>
     </div>
   );

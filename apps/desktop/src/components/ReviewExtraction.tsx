@@ -14,15 +14,15 @@ function ConfidenceBadge({ meta }: { meta?: FieldMeta | null }) {
   if (!meta?.confidence) return null;
 
   const colors = {
-    high: "bg-green-100 text-green-700",
-    medium: "bg-amber-100 text-amber-700",
-    low: "bg-red-100 text-red-700",
+    high: "bg-green-50 text-green-600",
+    medium: "bg-amber-50 text-amber-600",
+    low: "bg-orange-50 text-orange-600",
   };
 
   return (
     <span
       className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-        colors[meta.confidence] ?? "bg-gray-100 text-gray-500"
+        colors[meta.confidence] ?? "bg-gray-100 text-gray-400"
       }`}
       title={meta.source ? `Found: "${meta.source}"` : undefined}
     >
@@ -35,7 +35,10 @@ function SourceSnippet({ meta }: { meta?: FieldMeta | null }) {
   if (!meta?.source) return null;
 
   return (
-    <span className="text-[10px] text-gray-400 block mt-0.5 truncate" title={meta.source}>
+    <span
+      className="text-[10px] text-gray-300 block mt-0.5 truncate"
+      title={meta.source}
+    >
       &ldquo;{meta.source}&rdquo;
     </span>
   );
@@ -71,19 +74,19 @@ export default function ReviewExtraction({
     const m = parseFloat(minPayment);
 
     if (!cardName.trim()) {
-      setError("Card name is required");
+      setError("What's the name of this card?");
       return;
     }
     if (isNaN(b) || b <= 0) {
-      setError("Enter a valid balance");
+      setError("We need a valid balance to work with.");
       return;
     }
     if (isNaN(a) || a < 0) {
-      setError("Enter a valid APR");
+      setError("Please enter a valid APR (you can use 0 for promo rates).");
       return;
     }
     if (isNaN(m) || m <= 0) {
-      setError("Enter a valid minimum payment");
+      setError("What's the minimum payment on this card?");
       return;
     }
 
@@ -97,43 +100,48 @@ export default function ReviewExtraction({
     });
   }
 
-  function fieldStatus(value: string | number | boolean | null | undefined) {
-    if (value == null) return "text-amber-500";
-    if (typeof value === "number") return "text-green-600";
-    if (typeof value === "boolean") return value ? "text-green-600" : "text-amber-500";
-    return String(value) ? "text-green-600" : "text-amber-500";
+  function fieldLabel(value: string | number | boolean | null | undefined) {
+    if (value == null) return { text: "needs your help", color: "text-amber-500" };
+    if (typeof value === "number") return { text: "found", color: "text-green-500" };
+    if (typeof value === "boolean") return value
+      ? { text: "found", color: "text-green-500" }
+      : { text: "needs your help", color: "text-amber-500" };
+    return String(value)
+      ? { text: "found", color: "text-green-500" }
+      : { text: "needs your help", color: "text-amber-500" };
   }
 
+  const inputClass =
+    "border border-gray-200 rounded-lg px-3 py-2 mt-1 text-sm text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all";
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
-      <h3 className="font-semibold text-base mb-1">Review Extracted Data</h3>
-      <p className="text-xs text-gray-500 mb-4">
-        Verify the fields below and correct anything the AI got wrong.
-        {meta && (
-          <span className="ml-1 text-gray-400">
-            Confidence badges show how sure the AI is about each value.
-          </span>
-        )}
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h3 className="font-semibold text-base text-gray-800 mb-1">
+        Here's what we found
+      </h3>
+      <p className="text-xs text-gray-400 mb-4">
+        Double-check these numbers and fix anything that doesn't look right.
       </p>
 
       {isDeferred && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
           <p className="text-sm font-medium text-amber-800">
-            Deferred Interest Detected
+            This looks like a promotional financing plan
           </p>
-          <p className="text-xs text-amber-700 mt-1">
-            This balance is under a promotional/deferred interest plan.
+          <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+            The balance has deferred interest — meaning no interest now, but
+            it kicks in if not paid off in time.
             {fields.deferredInterestEndDate && (
               <>
-                {" "}Interest will be charged at{" "}
+                {" "}The rate jumps to{" "}
                 <strong>{fields.deferredInterestApr ?? "?"}%</strong> if not
-                paid in full by{" "}
+                cleared by{" "}
                 <strong>{fields.deferredInterestEndDate}</strong>.
               </>
             )}
           </p>
-          <div className="flex items-center gap-2 mt-2">
-            <label className="flex items-center gap-1.5 text-xs text-amber-800 cursor-pointer">
+          <div className="flex flex-col gap-2 mt-3">
+            <label className="flex items-center gap-2 text-xs text-amber-800 cursor-pointer">
               <input
                 type="radio"
                 name="aprChoice"
@@ -145,10 +153,9 @@ export default function ReviewExtraction({
                   );
                 }}
               />
-              Use deferred rate ({fields.deferredInterestApr ?? "?"}%) for
-              worst-case planning
+              Plan for worst case — use {fields.deferredInterestApr ?? "?"}% rate
             </label>
-            <label className="flex items-center gap-1.5 text-xs text-amber-800 cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-amber-800 cursor-pointer">
               <input
                 type="radio"
                 name="aprChoice"
@@ -158,7 +165,7 @@ export default function ReviewExtraction({
                   setApr("0");
                 }}
               />
-              Use 0% (plan to pay off before promo ends)
+              I'll pay it off before the promo ends — use 0%
             </label>
           </div>
         </div>
@@ -166,10 +173,10 @@ export default function ReviewExtraction({
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <label className="flex flex-col text-xs text-gray-600">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             Card Name
-            <span className={fieldStatus(fields.cardName)}>
-              {fields.cardName ? "  found" : "  not found"}
+            <span className={fieldLabel(fields.cardName).color}>
+              {fieldLabel(fields.cardName).text}
             </span>
             <ConfidenceBadge meta={meta?.cardName} />
           </span>
@@ -177,15 +184,15 @@ export default function ReviewExtraction({
           <input
             value={cardName}
             onChange={(e) => setCardName(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mt-1 text-sm text-gray-900"
+            className={inputClass}
           />
         </label>
 
         <label className="flex flex-col text-xs text-gray-600">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             Statement Balance ($)
-            <span className={fieldStatus(fields.statementBalance)}>
-              {fields.statementBalance != null ? "  found" : "  not found"}
+            <span className={fieldLabel(fields.statementBalance).color}>
+              {fieldLabel(fields.statementBalance).text}
             </span>
             <ConfidenceBadge meta={meta?.statementBalance} />
           </span>
@@ -195,21 +202,21 @@ export default function ReviewExtraction({
             step="0.01"
             value={balance}
             onChange={(e) => setBalance(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mt-1 text-sm text-gray-900"
+            className={inputClass}
           />
         </label>
 
         <label className="flex flex-col text-xs text-gray-600">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             APR (%)
             {isDeferred ? (
               <span className="text-amber-500">
-                {useDeferred ? "  using deferred rate" : "  using 0% promo"}
+                {useDeferred ? "using deferred rate" : "using 0% promo"}
               </span>
             ) : (
               <>
-                <span className={fieldStatus(fields.apr)}>
-                  {fields.apr != null ? "  found" : "  not found"}
+                <span className={fieldLabel(fields.apr).color}>
+                  {fieldLabel(fields.apr).text}
                 </span>
                 <ConfidenceBadge meta={meta?.apr} />
               </>
@@ -221,15 +228,15 @@ export default function ReviewExtraction({
             step="0.01"
             value={apr}
             onChange={(e) => setApr(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mt-1 text-sm text-gray-900"
+            className={inputClass}
           />
         </label>
 
         <label className="flex flex-col text-xs text-gray-600">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             Minimum Payment ($)
-            <span className={fieldStatus(fields.minimumPayment)}>
-              {fields.minimumPayment != null ? "  found" : "  not found"}
+            <span className={fieldLabel(fields.minimumPayment).color}>
+              {fieldLabel(fields.minimumPayment).text}
             </span>
             <ConfidenceBadge meta={meta?.minimumPayment} />
           </span>
@@ -239,18 +246,18 @@ export default function ReviewExtraction({
             step="0.01"
             value={minPayment}
             onChange={(e) => setMinPayment(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mt-1 text-sm text-gray-900"
+            className={inputClass}
           />
         </label>
 
         {fields.dueDate && (
           <div className="flex flex-col text-xs text-gray-600">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5">
               Due Date
               <ConfidenceBadge meta={meta?.dueDate} />
             </span>
             <SourceSnippet meta={meta?.dueDate} />
-            <p className="border border-gray-100 bg-gray-50 rounded px-3 py-2 mt-1 text-sm text-gray-700">
+            <p className="border border-gray-100 bg-warm-50 rounded-lg px-3 py-2 mt-1 text-sm text-gray-700">
               {fields.dueDate}
             </p>
           </div>
@@ -259,7 +266,7 @@ export default function ReviewExtraction({
         {fields.lastFour && (
           <div className="flex flex-col text-xs text-gray-600">
             <span>Card ending in</span>
-            <p className="border border-gray-100 bg-gray-50 rounded px-3 py-2 mt-1 text-sm text-gray-700">
+            <p className="border border-gray-100 bg-warm-50 rounded-lg px-3 py-2 mt-1 text-sm text-gray-700">
               ****{fields.lastFour}
             </p>
           </div>
@@ -267,26 +274,28 @@ export default function ReviewExtraction({
 
         {isDeferred && fields.deferredInterestEndDate && (
           <div className="flex flex-col text-xs text-gray-600">
-            <span>Promo Expires</span>
-            <p className="border border-amber-100 bg-amber-50 rounded px-3 py-2 mt-1 text-sm text-amber-800 font-medium">
+            <span>Promo expires</span>
+            <p className="border border-amber-100 bg-amber-50 rounded-lg px-3 py-2 mt-1 text-sm text-amber-800 font-medium">
               {fields.deferredInterestEndDate}
             </p>
           </div>
         )}
       </div>
 
-      {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+      {error && (
+        <p className="text-amber-600 text-xs mb-3">{error}</p>
+      )}
 
       <div className="flex gap-3">
         <button
           onClick={handleConfirm}
-          className="bg-blue-600 text-white px-5 py-2 rounded text-sm hover:bg-blue-700"
+          className="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm"
         >
-          Add Account
+          Looks good — add this account
         </button>
         <button
           onClick={onCancel}
-          className="text-gray-500 px-5 py-2 rounded text-sm hover:text-gray-700"
+          className="text-gray-400 px-5 py-2.5 rounded-xl text-sm hover:text-gray-600 transition-colors"
         >
           Cancel
         </button>

@@ -43,21 +43,24 @@ export default function SetupScreen({ onComplete }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <h1 className="text-2xl font-bold mb-2">Welcome to Debt Planner</h1>
-        <p className="text-gray-500 text-sm mb-6">
-          One-time setup: the app needs to download an AI model (~2 GB) so it
-          can read your credit card statements locally. Your data never leaves
-          your machine.
+    <div className="flex items-center justify-center min-h-screen bg-warm-50">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+        <p className="text-4xl mb-4">&#127793;</p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Welcome to Debt Planner
+        </h1>
+        <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          Before we get started, the app needs to download a small AI model
+          (~2 GB) so it can read your credit card statements. This is a
+          one-time thing.
         </p>
 
         {status === "ready" && (
           <button
             onClick={handleSetup}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 w-full"
+            className="bg-brand-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-brand-700 w-full transition-colors shadow-sm"
           >
-            Set Up AI
+            Get started
           </button>
         )}
 
@@ -66,13 +69,13 @@ export default function SetupScreen({ onComplete }: Props) {
             <p className="text-sm font-medium text-gray-700 mb-2">
               {progress.stage}
             </p>
-            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+            <div className="w-full bg-warm-100 rounded-full h-3 mb-2">
               <div
-                className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                className="bg-brand-500 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(progress.percent, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               {formatBytes(progress.downloaded)}
               {progress.total > 0 && <> / {formatBytes(progress.total)}</>}
               {" — "}
@@ -82,23 +85,26 @@ export default function SetupScreen({ onComplete }: Props) {
         )}
 
         {status === "downloading" && !progress && (
-          <p className="text-sm text-gray-500">Starting download...</p>
+          <p className="text-sm text-gray-400 animate-pulse">
+            Getting things ready...
+          </p>
         )}
 
         {status === "error" && (
           <div>
-            <p className="text-red-600 text-sm mb-3">{error}</p>
+            <p className="text-amber-600 text-sm mb-3">{error}</p>
             <button
               onClick={handleSetup}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700"
+              className="bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
             >
-              Retry
+              Try again
             </button>
           </div>
         )}
 
-        <p className="text-xs text-gray-400 mt-6">
-          All processing happens on your device. No cloud. No accounts.
+        <p className="text-xs text-gray-300 mt-6">
+          Everything runs on your computer. No cloud, no accounts, no data
+          leaves your machine.
         </p>
       </div>
     </div>
