@@ -1,0 +1,11 @@
+node_modules/
+dist/
+target/
+*.tsbuildinfo
+
+# Tauri generated icons (can be regenerated)
+apps/desktop/src-tauri/icons/
+
+# OS files
+.DS_Store
+Thumbs.db

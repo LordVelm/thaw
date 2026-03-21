@@ -1,0 +1,25 @@
+[package]
+name = "debt-planner-desktop"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "debt_planner_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "debt-planner-desktop"
+path = "src/main.rs"
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-build = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["stream", "json"] }
+tokio = { version = "1", features = ["full"] }
+futures-util = "0.3"
+zip = "2"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
