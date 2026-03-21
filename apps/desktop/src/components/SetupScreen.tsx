@@ -43,9 +43,12 @@ export default function SetupScreen({ onComplete }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-warm-50">
+    <div
+      className="flex items-center justify-center min-h-screen"
+      style={{ backgroundColor: "#faf8f5" }}
+    >
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-        <p className="text-4xl mb-4">&#127793;</p>
+        <p className="text-5xl mb-4">&#129526;</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           Welcome to Thaw
         </h1>
@@ -58,7 +61,8 @@ export default function SetupScreen({ onComplete }: Props) {
         {status === "ready" && (
           <button
             onClick={handleSetup}
-            className="bg-brand-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-brand-700 w-full transition-colors shadow-sm"
+            className="text-white px-6 py-3 rounded-xl text-sm font-semibold hover:opacity-90 w-full transition-opacity shadow-sm"
+            style={{ backgroundColor: "#0070cc" }}
           >
             Get started
           </button>
@@ -69,10 +73,16 @@ export default function SetupScreen({ onComplete }: Props) {
             <p className="text-sm font-medium text-gray-700 mb-2">
               {progress.stage}
             </p>
-            <div className="w-full bg-warm-100 rounded-full h-3 mb-2">
+            <div
+              className="w-full rounded-full h-3 mb-2"
+              style={{ backgroundColor: "#f5f0ea" }}
+            >
               <div
-                className="bg-brand-500 h-3 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(progress.percent, 100)}%` }}
+                className="h-3 rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.min(progress.percent, 100)}%`,
+                  backgroundColor: "#0b8fef",
+                }}
               />
             </div>
             <p className="text-xs text-gray-400">
@@ -95,7 +105,8 @@ export default function SetupScreen({ onComplete }: Props) {
             <p className="text-amber-600 text-sm mb-3">{error}</p>
             <button
               onClick={handleSetup}
-              className="bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
+              className="text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: "#0070cc" }}
             >
               Try again
             </button>

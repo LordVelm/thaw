@@ -4,9 +4,29 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-50: #f0f7ff;
+  --brand-100: #e0efff;
+  --brand-200: #b9ddff;
+  --brand-300: #7cc4ff;
+  --brand-400: #36a9ff;
+  --brand-500: #0b8fef;
+  --brand-600: #0070cc;
+  --brand-700: #0059a6;
+  --brand-800: #024b89;
+  --brand-900: #083f71;
+
+  --warm-50: #faf8f5;
+  --warm-100: #f5f0ea;
+  --warm-200: #ede5d8;
+  --warm-300: #ddd0bd;
+  --warm-400: #c9b59c;
+}
+
 body {
-  background-color: #faf8f5;
+  background-color: var(--warm-50);
   color: #1f2937;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
