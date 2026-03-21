@@ -203,7 +203,13 @@ export default function App() {
         </section>
       )}
 
-      {results && <PlanResults results={results} accounts={accounts} />}
+      {results && (
+        <PlanResults
+          results={results}
+          accounts={accounts}
+          monthlyBudget={parseFloat(monthlyBudget) || 0}
+        />
+      )}
     </div>
   );
 }
