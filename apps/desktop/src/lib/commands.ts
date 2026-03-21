@@ -13,6 +13,21 @@ export interface DownloadProgress {
   percent: number;
 }
 
+export interface FieldMeta {
+  confidence: "high" | "medium" | "low" | null;
+  source: string | null;
+}
+
+export interface FieldMetaMap {
+  cardName?: FieldMeta;
+  statementBalance?: FieldMeta;
+  minimumPayment?: FieldMeta;
+  apr?: FieldMeta;
+  dueDate?: FieldMeta;
+  interestCharged?: FieldMeta;
+  deferredInterestApr?: FieldMeta;
+}
+
 export interface ExtractedFields {
   cardName: string | null;
   lastFour: string | null;
@@ -24,6 +39,7 @@ export interface ExtractedFields {
   isDeferredInterest: boolean | null;
   deferredInterestApr: number | null;
   deferredInterestEndDate: string | null;
+  fieldMeta?: FieldMetaMap | null;
 }
 
 export async function checkAiSetup(): Promise<SetupStatus> {

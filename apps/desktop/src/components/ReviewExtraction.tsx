@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ExtractedFields } from "../lib/commands";
+import type { ExtractedFields, FieldMeta } from "../lib/commands";
 import type { DebtAccount } from "@debt-planner/core-types";
 
 interface Props {
@@ -10,18 +10,49 @@ interface Props {
 
 let nextId = 1;
 
+function ConfidenceBadge({ meta }: { meta?: FieldMeta | null }) {
+  if (!meta?.confidence) return null;
+
+  const colors = {
+    high: "bg-green-100 text-green-700",
+    medium: "bg-amber-100 text-amber-700",
+    low: "bg-red-100 text-red-700",
+  };
+
+  return (
+    <span
+      className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+        colors[meta.confidence] ?? "bg-gray-100 text-gray-500"
+      }`}
+      title={meta.source ? `Found: "${meta.source}"` : undefined}
+    >
+      {meta.confidence}
+    </span>
+  );
+}
+
+function SourceSnippet({ meta }: { meta?: FieldMeta | null }) {
+  if (!meta?.source) return null;
+
+  return (
+    <span className="text-[10px] text-gray-400 block mt-0.5 truncate" title={meta.source}>
+      &ldquo;{meta.source}&rdquo;
+    </span>
+  );
+}
+
 export default function ReviewExtraction({
   fields,
   onConfirm,
   onCancel,
 }: Props) {
   const isDeferred = fields.isDeferredInterest === true;
+  const meta = fields.fieldMeta;
 
   const [cardName, setCardName] = useState(fields.cardName ?? "");
   const [balance, setBalance] = useState(
     fields.statementBalance?.toString() ?? ""
   );
-  // For deferred interest: default APR to the deferred rate (what they'll actually pay)
   const [apr, setApr] = useState(() => {
     if (isDeferred && fields.deferredInterestApr != null) {
       return fields.deferredInterestApr.toString();
@@ -68,7 +99,7 @@ export default function ReviewExtraction({
 
   function fieldStatus(value: string | number | boolean | null | undefined) {
     if (value == null) return "text-amber-500";
-    if (typeof value === "number") return "text-green-600"; // 0 is a valid found value
+    if (typeof value === "number") return "text-green-600";
     if (typeof value === "boolean") return value ? "text-green-600" : "text-amber-500";
     return String(value) ? "text-green-600" : "text-amber-500";
   }
@@ -78,6 +109,11 @@ export default function ReviewExtraction({
       <h3 className="font-semibold text-base mb-1">Review Extracted Data</h3>
       <p className="text-xs text-gray-500 mb-4">
         Verify the fields below and correct anything the AI got wrong.
+        {meta && (
+          <span className="ml-1 text-gray-400">
+            Confidence badges show how sure the AI is about each value.
+          </span>
+        )}
       </p>
 
       {isDeferred && (
@@ -135,7 +171,9 @@ export default function ReviewExtraction({
             <span className={fieldStatus(fields.cardName)}>
               {fields.cardName ? "  found" : "  not found"}
             </span>
+            <ConfidenceBadge meta={meta?.cardName} />
           </span>
+          <SourceSnippet meta={meta?.cardName} />
           <input
             value={cardName}
             onChange={(e) => setCardName(e.target.value)}
@@ -149,7 +187,9 @@ export default function ReviewExtraction({
             <span className={fieldStatus(fields.statementBalance)}>
               {fields.statementBalance != null ? "  found" : "  not found"}
             </span>
+            <ConfidenceBadge meta={meta?.statementBalance} />
           </span>
+          <SourceSnippet meta={meta?.statementBalance} />
           <input
             type="number"
             step="0.01"
@@ -167,11 +207,15 @@ export default function ReviewExtraction({
                 {useDeferred ? "  using deferred rate" : "  using 0% promo"}
               </span>
             ) : (
-              <span className={fieldStatus(fields.apr)}>
-                {fields.apr != null ? "  found" : "  not found"}
-              </span>
+              <>
+                <span className={fieldStatus(fields.apr)}>
+                  {fields.apr != null ? "  found" : "  not found"}
+                </span>
+                <ConfidenceBadge meta={meta?.apr} />
+              </>
             )}
           </span>
+          {!isDeferred && <SourceSnippet meta={meta?.apr} />}
           <input
             type="number"
             step="0.01"
@@ -187,7 +231,9 @@ export default function ReviewExtraction({
             <span className={fieldStatus(fields.minimumPayment)}>
               {fields.minimumPayment != null ? "  found" : "  not found"}
             </span>
+            <ConfidenceBadge meta={meta?.minimumPayment} />
           </span>
+          <SourceSnippet meta={meta?.minimumPayment} />
           <input
             type="number"
             step="0.01"
@@ -199,7 +245,11 @@ export default function ReviewExtraction({
 
         {fields.dueDate && (
           <div className="flex flex-col text-xs text-gray-600">
-            <span>Due Date</span>
+            <span className="flex items-center gap-1">
+              Due Date
+              <ConfidenceBadge meta={meta?.dueDate} />
+            </span>
+            <SourceSnippet meta={meta?.dueDate} />
             <p className="border border-gray-100 bg-gray-50 rounded px-3 py-2 mt-1 text-sm text-gray-700">
               {fields.dueDate}
             </p>

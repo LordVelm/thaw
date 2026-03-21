@@ -29,6 +29,13 @@ pub struct DownloadProgress {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct FieldMeta {
+    pub confidence: Option<String>,  // "high", "medium", "low"
+    pub source: Option<String>,      // snippet from statement text
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ExtractedFields {
     pub card_name: Option<String>,
     pub last_four: Option<String>,
@@ -40,6 +47,20 @@ pub struct ExtractedFields {
     pub is_deferred_interest: Option<bool>,
     pub deferred_interest_apr: Option<f64>,
     pub deferred_interest_end_date: Option<String>,
+    #[serde(default)]
+    pub field_meta: Option<FieldMetaMap>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FieldMetaMap {
+    pub card_name: Option<FieldMeta>,
+    pub statement_balance: Option<FieldMeta>,
+    pub minimum_payment: Option<FieldMeta>,
+    pub apr: Option<FieldMeta>,
+    pub due_date: Option<FieldMeta>,
+    pub interest_charged: Option<FieldMeta>,
+    pub deferred_interest_apr: Option<FieldMeta>,
 }
 
 pub struct LlmState {
@@ -390,6 +411,15 @@ Return ONLY a valid JSON object with these exact fields:
 - "isDeferredInterest": Set to true if you see ANY of these indicators: "deferred interest", "no interest if paid in full", "promotional financing", "special financing", "equal pay", or if the statement shows a promotional balance with a future expiration date. Set to false otherwise. (boolean)
 - "deferredInterestApr": If isDeferredInterest is true, the APR that will apply AFTER the promotional period ends. Look for labels like "Standard APR", "Purchase APR", "Variable APR", "Deferred Interest Rate", "Regular APR", or "Penalty APR". For store cards like Best Buy, Synchrony, Care Credit etc. this is usually 25-30%. (number or null)
 - "deferredInterestEndDate": The date by which the promotional balance must be paid in full to avoid deferred interest charges, in YYYY-MM-DD format (string or null)
+- "fieldMeta": An object with provenance for each extracted field. For each field you extracted (cardName, statementBalance, minimumPayment, apr, dueDate, interestCharged, deferredInterestApr), include:
+  - "confidence": "high" if the value was clearly labeled, "medium" if inferred from context, "low" if guessed
+  - "source": the exact short snippet (max 60 chars) from the statement text where you found this value
+
+Example fieldMeta:
+"fieldMeta": {{
+  "statementBalance": {{"confidence": "high", "source": "New Balance $3,918.16"}},
+  "apr": {{"confidence": "high", "source": "Annual Percentage Rate 22.74%"}}
+}}
 
 Do not include any text outside the JSON object.
 
