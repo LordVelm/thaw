@@ -34,7 +34,7 @@ pub struct ExpenseEntry {
 pub fn init_db(data_dir: &Path) -> Result<Connection, String> {
     std::fs::create_dir_all(data_dir).map_err(|e| format!("Failed to create data dir: {e}"))?;
 
-    let db_path = data_dir.join("debt_planner.db");
+    let db_path = data_dir.join("thaw.db");
     let conn = Connection::open(&db_path)
         .map_err(|e| format!("Failed to open database: {e}"))?;
 

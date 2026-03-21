@@ -47,7 +47,7 @@ export default function SetupScreen({ onComplete }: Props) {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
         <p className="text-4xl mb-4">&#127793;</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          Welcome to Debt Planner
+          Welcome to Thaw
         </h1>
         <p className="text-gray-500 text-sm mb-6 leading-relaxed">
           Before we get started, the app needs to download a small AI model
