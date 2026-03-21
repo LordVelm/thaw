@@ -4,8 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-warm-50 text-gray-800 antialiased;
-  }
+body {
+  background-color: #faf8f5;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
