@@ -200,7 +200,7 @@ export default function App() {
       {/* Welcome — only when no accounts */}
       {!hasAccounts && !extractedFields && !showManualForm && (
         <div className="mt-8 mb-10 text-center">
-          <p className="text-5xl mb-4">&#129526;</p>
+          <p className="text-5xl mb-4">&#10052;&#65039;</p>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             You're taking the first step
           </h2>

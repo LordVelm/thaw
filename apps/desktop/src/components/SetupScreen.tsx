@@ -48,7 +48,7 @@ export default function SetupScreen({ onComplete }: Props) {
       style={{ backgroundColor: "#faf8f5" }}
     >
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-        <p className="text-5xl mb-4">&#129526;</p>
+        <p className="text-5xl mb-4" style={{ filter: "hue-rotate(200deg)" }}>&#10052;&#65039;</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           Welcome to Thaw
         </h1>
