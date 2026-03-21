@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ExpenseCategory {
   key: string;
@@ -18,7 +18,10 @@ const EXPENSE_CATEGORIES: ExpenseCategory[] = [
 
 interface Props {
   totalMinimumPayments: number;
+  initialIncome?: number;
+  initialExpenses?: Record<string, number>;
   onBudgetCalculated: (availableForDebt: number) => void;
+  onBudgetChanged?: (income: number, expenses: Record<string, number>) => void;
 }
 
 function fmt(n: number) {
@@ -27,11 +30,40 @@ function fmt(n: number) {
 
 export default function BudgetCalculator({
   totalMinimumPayments,
+  initialIncome,
+  initialExpenses,
   onBudgetCalculated,
+  onBudgetChanged,
 }: Props) {
-  const [income, setIncome] = useState("");
-  const [expenses, setExpenses] = useState<Record<string, string>>({});
+  const [income, setIncome] = useState(
+    initialIncome && initialIncome > 0 ? initialIncome.toString() : ""
+  );
+  const [expenses, setExpenses] = useState<Record<string, string>>(() => {
+    if (!initialExpenses) return {};
+    const result: Record<string, string> = {};
+    for (const [key, val] of Object.entries(initialExpenses)) {
+      if (val > 0) result[key] = val.toString();
+    }
+    return result;
+  });
   const [expanded, setExpanded] = useState(true);
+
+  // Update state if initial values change (loaded from DB)
+  useEffect(() => {
+    if (initialIncome && initialIncome > 0) {
+      setIncome(initialIncome.toString());
+    }
+  }, [initialIncome]);
+
+  useEffect(() => {
+    if (initialExpenses) {
+      const result: Record<string, string> = {};
+      for (const [key, val] of Object.entries(initialExpenses)) {
+        if (val > 0) result[key] = val.toString();
+      }
+      setExpenses(result);
+    }
+  }, [initialExpenses]);
 
   const incomeNum = parseFloat(income) || 0;
   const totalExpenses = Object.values(expenses).reduce(
@@ -45,8 +77,18 @@ export default function BudgetCalculator({
     setExpenses((prev) => ({ ...prev, [key]: value }));
   }
 
+  function getExpensesAsNumbers(): Record<string, number> {
+    const result: Record<string, number> = {};
+    for (const [key, val] of Object.entries(expenses)) {
+      const num = parseFloat(val) || 0;
+      if (num > 0) result[key] = num;
+    }
+    return result;
+  }
+
   function handleCalculate() {
     if (incomeNum <= 0) return;
+    onBudgetChanged?.(incomeNum, getExpensesAsNumbers());
     onBudgetCalculated(availableForDebt);
   }
 

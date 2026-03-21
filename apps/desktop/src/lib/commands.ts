@@ -47,3 +47,45 @@ export function onDownloadProgress(
     callback(event.payload);
   });
 }
+
+// --- Database types ---
+
+export interface SavedAccount {
+  id: string;
+  name: string;
+  balance: number;
+  apr: number;
+  minimumPayment: number;
+}
+
+export interface BudgetConfig {
+  income: number;
+  expenses: ExpenseEntry[];
+}
+
+export interface ExpenseEntry {
+  category: string;
+  amount: number;
+}
+
+// --- Database commands ---
+
+export async function dbGetAccounts(): Promise<SavedAccount[]> {
+  return invoke("db_get_accounts");
+}
+
+export async function dbSaveAccount(account: SavedAccount): Promise<void> {
+  return invoke("db_save_account", { account });
+}
+
+export async function dbDeleteAccount(id: string): Promise<void> {
+  return invoke("db_delete_account", { id });
+}
+
+export async function dbGetBudget(): Promise<BudgetConfig> {
+  return invoke("db_get_budget");
+}
+
+export async function dbSaveBudget(config: BudgetConfig): Promise<void> {
+  return invoke("db_save_budget", { config });
+}
