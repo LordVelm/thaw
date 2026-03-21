@@ -65,6 +65,15 @@ pub struct FieldMetaMap {
 
 pub struct LlmState {
     pub server_process: Mutex<Option<Child>>,
+    pub force_cpu: Mutex<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct GpuStatus {
+    pub gpu_detected: bool,
+    pub cuda_build: bool,
+    pub using_gpu: bool,
 }
 
 pub fn get_data_dir(app: &AppHandle) -> PathBuf {
@@ -347,8 +356,10 @@ pub fn start_server(data_dir: &Path, state: &LlmState) -> Result<(), String> {
     let model_path = get_model_path(data_dir);
     let bin_dir = get_server_dir(data_dir);
 
-    // Use GPU if we downloaded the CUDA build, otherwise CPU
-    let gpu_layers = if has_cuda_build(data_dir) { "99" } else { "0" };
+    // Use GPU if we downloaded the CUDA build and not forced to CPU
+    let force_cpu = state.force_cpu.lock().map_err(|e| e.to_string())?;
+    let gpu_layers = if has_cuda_build(data_dir) && !*force_cpu { "99" } else { "0" };
+    drop(force_cpu);
 
     let child = Command::new(&server_path)
         .current_dir(&bin_dir)
@@ -527,6 +538,23 @@ Statement text:
     }
 
     Ok(fields)
+}
+
+pub fn get_gpu_status(data_dir: &Path, state: &LlmState) -> GpuStatus {
+    let gpu_detected = has_nvidia_gpu();
+    let cuda_build = has_cuda_build(data_dir);
+    let force_cpu = state.force_cpu.lock().map(|v| *v).unwrap_or(false);
+    GpuStatus {
+        gpu_detected,
+        cuda_build,
+        using_gpu: cuda_build && !force_cpu,
+    }
+}
+
+pub fn set_force_cpu(state: &LlmState, force: bool) {
+    if let Ok(mut guard) = state.force_cpu.lock() {
+        *guard = force;
+    }
 }
 
 pub fn stop_server(state: &LlmState) {

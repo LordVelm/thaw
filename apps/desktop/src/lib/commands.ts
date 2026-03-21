@@ -64,6 +64,22 @@ export function onDownloadProgress(
   });
 }
 
+// --- GPU types ---
+
+export interface GpuStatus {
+  gpuDetected: boolean;
+  cudaBuild: boolean;
+  usingGpu: boolean;
+}
+
+export async function getGpuStatus(): Promise<GpuStatus> {
+  return invoke("get_gpu_status");
+}
+
+export async function setGpuEnabled(enabled: boolean): Promise<void> {
+  return invoke("set_gpu_enabled", { enabled });
+}
+
 // --- Database types ---
 
 export interface SavedAccount {

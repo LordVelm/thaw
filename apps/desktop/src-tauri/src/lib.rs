@@ -2,7 +2,7 @@ mod db;
 mod llm;
 
 use db::{BudgetConfig, DbState, SavedAccount};
-use llm::{ExtractedFields, LlmState, SetupStatus};
+use llm::{ExtractedFields, GpuStatus, LlmState, SetupStatus};
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -39,6 +39,30 @@ async fn extract_statement(
     llm::wait_for_server().await?;
 
     llm::run_inference(&text).await
+}
+
+// --- GPU commands ---
+
+#[tauri::command]
+fn get_gpu_status(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, LlmState>,
+) -> GpuStatus {
+    let data_dir = llm::get_data_dir(&app);
+    llm::get_gpu_status(&data_dir, &state)
+}
+
+#[tauri::command]
+fn set_gpu_enabled(
+    enabled: bool,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, LlmState>,
+) -> Result<(), String> {
+    llm::set_force_cpu(&state, !enabled);
+    // Restart server with new setting
+    llm::stop_server(&state);
+    let data_dir = llm::get_data_dir(&app);
+    llm::start_server(&data_dir, &state)
 }
 
 // --- Database commands ---
@@ -78,6 +102,7 @@ pub fn run() {
     let app = tauri::Builder::default()
         .manage(LlmState {
             server_process: Mutex::new(None),
+            force_cpu: Mutex::new(false),
         })
         .setup(|app| {
             let data_dir = llm::get_data_dir(app.handle());
@@ -92,6 +117,8 @@ pub fn run() {
             check_ai_setup,
             setup_ai,
             extract_statement,
+            get_gpu_status,
+            set_gpu_enabled,
             db_get_accounts,
             db_save_account,
             db_delete_account,

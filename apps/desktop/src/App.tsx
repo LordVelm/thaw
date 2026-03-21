@@ -16,6 +16,7 @@ import ReviewExtraction from "./components/ReviewExtraction";
 import AccountForm from "./components/AccountForm";
 import BudgetCalculator from "./components/BudgetCalculator";
 import PlanResults from "./components/PlanResults";
+import SettingsPanel from "./components/SettingsPanel";
 
 type View = "loading" | "setup" | "main";
 
@@ -38,6 +39,7 @@ export default function App() {
   const [extractedFields, setExtractedFields] =
     useState<ExtractedFields | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Load saved data on startup
   useEffect(() => {
@@ -178,10 +180,23 @@ export default function App() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-1">Debt Planner</h1>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-2xl font-bold">Debt Planner</h1>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="text-gray-400 hover:text-gray-600 text-xl p-1"
+          title="Settings"
+        >
+          &#9881;
+        </button>
+      </div>
       <p className="text-sm text-gray-500 mb-6">
         For planning &amp; education only — not financial advice.
       </p>
+
+      {showSettings && (
+        <SettingsPanel onClose={() => setShowSettings(false)} />
+      )}
 
       {/* Upload / Extraction section */}
       <section className="mb-8">
