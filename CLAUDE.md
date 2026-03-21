@@ -41,11 +41,12 @@ debt-planner-local/
     desktop/                # Tauri + React + Vite desktop app
       src/                  # React frontend
         App.tsx             # Main app with setup/upload/plan flow
-        components/         # SetupScreen, StatementUpload, ReviewExtraction, AccountForm, PlanResults
-        lib/                # commands.ts (Tauri IPC), pdf.ts (pdfjs-dist)
+        components/         # SetupScreen, StatementUpload, ReviewExtraction, AccountForm, BudgetCalculator, PlanResults, SettingsPanel
+        lib/                # commands.ts (Tauri IPC + DB + GPU), pdf.ts (pdfjs-dist + Tesseract.js OCR)
       src-tauri/            # Rust backend
-        src/lib.rs          # Tauri commands (check_ai_setup, setup_ai, extract_statement)
-        src/llm.rs          # LLM management (download, server lifecycle, inference)
+        src/lib.rs          # Tauri commands (AI, DB, GPU)
+        src/llm.rs          # LLM management (download, server lifecycle, inference, GPU)
+        src/db.rs           # SQLite database (accounts, budget)
         src/main.rs         # Binary entry point
   packages/
     core-types/             # shared TS types
@@ -83,11 +84,14 @@ debt-planner-local/
 
 - **Tauri v2 desktop app** with React 19 + Vite 6 + Tailwind CSS 3.
 - **First-run onboarding:** Downloads llama-server (from llama.cpp GitHub releases) and Qwen2.5-3B-Instruct GGUF model (~2 GB) to app data directory. Progress bar UI.
-- **PDF upload flow:** User drops/selects a PDF statement → pdfjs-dist extracts text → llama-server runs structured extraction → review screen with editable fields → confirm to add account.
+- **PDF upload flow:** User drops/selects a PDF statement → pdfjs-dist extracts text (OCR fallback via Tesseract.js for scanned PDFs) → llama-server runs structured extraction with confidence scores and source snippets → review screen with editable fields → confirm to add account.
 - **Manual fallback:** User can also add accounts by hand.
-- **Payoff plan:** Runs both avalanche and snowball via `generatePlan()`, shows comparison cards highlighting which saves more interest, plus per-account summary table.
+- **Budget calculator:** Guided income/expenses breakdown to compute available debt budget. Categories: rent, utilities, groceries, transportation, insurance, subscriptions, other. Warns if budget is below combined minimums.
+- **Payoff plan:** Runs both avalanche and snowball via `generatePlan()`. Redesigned results: strategy picker, "This Month" action card, visual payoff timeline with calendar dates, month-by-month payment schedule, per-account breakdown table.
+- **Persistence:** SQLite database (rusqlite bundled) stores accounts and budget config. Data loads automatically on app startup.
+- **Settings panel:** GPU/CPU toggle for AI acceleration. Auto-detects NVIDIA GPU and CUDA build. Restarts AI engine on toggle.
 - **LLM lifecycle:** llama-server spawned as child process on first extraction, kept running for session, killed on app exit.
-- **Rust backend commands:** `check_ai_setup`, `setup_ai`, `extract_statement` in `src-tauri/src/lib.rs`.
+- **Rust backend commands:** `check_ai_setup`, `setup_ai`, `extract_statement`, `get_gpu_status`, `set_gpu_enabled`, `db_*` in `src-tauri/src/lib.rs`.
 
 ### Docs
 
@@ -138,10 +142,14 @@ npm run build
 2. ~~Scaffold Tauri + React + Vite in `apps/desktop`.~~ **Done**
 3. ~~Minimal UI: account entry + payoff plan display.~~ **Done**
 4. ~~PDF upload + local LLM extraction pipeline.~~ **Done**
-5. Add **SQLite** (encrypted) and persistence for accounts/statements/plan runs.
-6. Improve extraction accuracy: confidence scoring, source snippet highlighting, multi-APR support.
-7. OCR fallback for scanned/image-only PDF statements.
-8. GPU acceleration option for faster LLM inference (`-ngl` flag).
+5. ~~Add **SQLite** and persistence for accounts/budget config.~~ **Done** — rusqlite bundled, accounts + budget saved to `debt_planner.db` in app data dir.
+6. ~~Improve extraction accuracy: confidence scoring, source snippet highlighting.~~ **Done** — LLM returns per-field confidence (high/medium/low) and source snippets shown in review UI.
+7. ~~OCR fallback for scanned/image-only PDF statements.~~ **Done** — Tesseract.js auto-detects scanned PDFs and runs OCR with page-by-page progress.
+8. ~~GPU acceleration option.~~ **Done** — Settings panel with GPU/CPU toggle, auto-restarts AI engine.
+9. UI/UX enhancements (next).
+10. DB encryption (sqlcipher) for sensitive data at rest.
+11. Multi-APR support (multiple balances with different rates on one card).
+12. Statement history and trend tracking.
 
 ---
 
