@@ -19,14 +19,9 @@
 
 ---
 
-<!-- Add screenshots here after taking them:
 <p align="center">
-  <img src="docs/screenshots/welcome.png" width="720" alt="Welcome screen" />
+  <img src="docs/screenshots/welcome.png" width="720" alt="Thaw welcome screen" />
 </p>
-<p align="center">
-  <img src="docs/screenshots/plan-results.png" width="720" alt="Payoff plan results" />
-</p>
--->
 
 ## Features
 
