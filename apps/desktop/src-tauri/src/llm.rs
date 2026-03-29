@@ -3,6 +3,9 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
@@ -114,12 +117,13 @@ pub fn get_server_path(data_dir: &Path) -> PathBuf {
 
 /// Detect whether an NVIDIA GPU is available by running nvidia-smi
 pub fn has_nvidia_gpu() -> bool {
-    Command::new("nvidia-smi")
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
+    let mut cmd = Command::new("nvidia-smi");
+    cmd.stdout(Stdio::null()).stderr(Stdio::null());
+
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+
+    cmd.status().map(|s| s.success()).unwrap_or(false)
 }
 
 /// Check if we downloaded the CUDA build (marker file)
@@ -374,8 +378,8 @@ pub fn start_server(data_dir: &Path, state: &LlmState) -> Result<(), String> {
     let gpu_layers = if has_cuda_build(data_dir) && !*force_cpu { "99" } else { "0" };
     drop(force_cpu);
 
-    let child = Command::new(&server_path)
-        .current_dir(&bin_dir)
+    let mut cmd = Command::new(&server_path);
+    cmd.current_dir(&bin_dir)
         .arg("-m")
         .arg(&model_path)
         .arg("--port")
@@ -388,8 +392,12 @@ pub fn start_server(data_dir: &Path, state: &LlmState) -> Result<(), String> {
         .arg("8192")
         .arg("--cont-batching")
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
+        .stderr(Stdio::null());
+
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+
+    let child = cmd.spawn()
         .map_err(|e| format!("Failed to start llama-server: {}", e))?;
 
     *process_guard = Some(child);
