@@ -221,7 +221,7 @@ export default function App() {
       {!hasAccounts && !extractedFields && !showManualForm && (
         <div className="mt-8 mb-10 text-center">
           <ThawLogo size={64} className="mx-auto mb-2" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
             You're taking the first step
           </h2>
           <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
@@ -234,13 +234,13 @@ export default function App() {
       {/* Upload / Extraction section */}
       <section className="mb-8">
         {!hasAccounts && !extractedFields && !showManualForm && (
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+          <h2 className="text-xl font-semibold text-gray-700 mb-3">
             Let's start with your statements
           </h2>
         )}
 
         {hasAccounts && !extractedFields && !showManualForm && (
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+          <h2 className="text-xl font-semibold text-gray-700 mb-3">
             Add another account
           </h2>
         )}
@@ -273,7 +273,7 @@ export default function App() {
       {hasAccounts && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-700">
+            <h2 className="text-xl font-semibold text-gray-700">
               Your accounts
             </h2>
             <p className="text-sm text-gray-400">
@@ -343,7 +343,7 @@ export default function App() {
       {/* Budget Calculator */}
       {hasAccounts && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-700 mb-1">
+          <h2 className="text-xl font-semibold text-gray-700 mb-1">
             What can you put toward debt?
           </h2>
           <p className="text-sm text-gray-400 mb-3">
