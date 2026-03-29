@@ -146,10 +146,12 @@ npm run build
 6. ~~Improve extraction accuracy: confidence scoring, source snippet highlighting.~~ **Done** — LLM returns per-field confidence (high/medium/low) and source snippets shown in review UI.
 7. ~~OCR fallback for scanned/image-only PDF statements.~~ **Done** — Tesseract.js auto-detects scanned PDFs and runs OCR with page-by-page progress.
 8. ~~GPU acceleration option.~~ **Done** — Settings panel with GPU/CPU toggle, auto-restarts AI engine.
-9. UI/UX enhancements (next).
-10. DB encryption (sqlcipher) for sensitive data at rest.
-11. Multi-APR support (multiple balances with different rates on one card).
-12. Statement history and trend tracking.
+9. ~~UI/UX enhancements.~~ **Done** — Warm color palette, encouraging tone, progress ring, milestone celebrations, conversational copy, renamed to **Thaw**.
+10. ~~**Custom logo/icon**~~ **Done** — Custom Thaw droplet icon (SVG component + all Tauri platform icons). Replaced emoji placeholders in header, welcome page, and setup screen.
+11. ~~**Bank statement import**~~ **Done** — Upload bank statement PDF to auto-populate budget calculator. Reuses PDF extraction + LLM pipeline with a bank-statement-specific prompt. Extracts income and categorized expenses, pre-fills fields for user review.
+12. ~~DB encryption (sqlcipher) for sensitive data at rest.~~ **Skipped** — Adds UX friction (password prompts or key management) for marginal security on a local-only app. Not worth complicating the experience for users already dealing with stress.
+13. **Multi-APR support** (multiple balances with different rates on one card).
+14. **Statement history and trend tracking.**
 
 ---
 

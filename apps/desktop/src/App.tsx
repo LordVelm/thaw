@@ -17,6 +17,7 @@ import AccountForm from "./components/AccountForm";
 import BudgetCalculator from "./components/BudgetCalculator";
 import PlanResults from "./components/PlanResults";
 import SettingsPanel from "./components/SettingsPanel";
+import ThawLogo from "./components/ThawLogo";
 
 type View = "loading" | "setup" | "main";
 
@@ -65,6 +66,14 @@ export default function App() {
               balance: a.balance,
               apr: a.apr,
               minimumPayment: a.minimumPayment,
+              tiers: a.tiers.map((t) => ({
+                id: t.id,
+                label: t.label ?? undefined,
+                balance: t.balance,
+                apr: t.apr,
+                promoExpirationDate: t.promoExpirationDate ?? undefined,
+                postPromoApr: t.postPromoApr ?? undefined,
+              })),
             }))
           );
         }
@@ -104,6 +113,14 @@ export default function App() {
         balance: account.balance,
         apr: account.apr,
         minimumPayment: account.minimumPayment,
+        tiers: (account.tiers ?? []).map((t) => ({
+          id: t.id,
+          label: t.label ?? null,
+          balance: t.balance,
+          apr: t.apr,
+          promoExpirationDate: t.promoExpirationDate ?? null,
+          postPromoApr: t.postPromoApr ?? null,
+        })),
       });
     } catch {
       // DB not available
@@ -178,11 +195,14 @@ export default function App() {
     <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Thaw</h1>
-          <p className="text-sm text-gray-400">
-            Your data stays on your computer. Always.
-          </p>
+        <div className="flex items-center gap-3">
+          <ThawLogo size={36} />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Thaw</h1>
+            <p className="text-sm text-gray-400">
+              Your data stays on your computer. Always.
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setShowSettings(true)}
@@ -200,7 +220,7 @@ export default function App() {
       {/* Welcome — only when no accounts */}
       {!hasAccounts && !extractedFields && !showManualForm && (
         <div className="mt-8 mb-10 text-center">
-          <p className="text-5xl mb-4">&#10052;&#65039;</p>
+          <ThawLogo size={64} className="mx-auto mb-2" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             You're taking the first step
           </h2>
@@ -290,7 +310,11 @@ export default function App() {
                     <td className="px-4 py-3 text-right">
                       ${a.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="px-4 py-3 text-right">{a.apr}%</td>
+                    <td className="px-4 py-3 text-right">
+                      {a.tiers && a.tiers.length > 1
+                        ? `${a.apr}% (${a.tiers.length} tiers)`
+                        : `${a.apr}%`}
+                    </td>
                     <td className="px-4 py-3 text-right">
                       ${a.minimumPayment.toFixed(2)}
                     </td>

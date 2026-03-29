@@ -70,6 +70,19 @@ pub struct LlmState {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct ExtractedBudget {
+    pub income: Option<f64>,
+    pub rent: Option<f64>,
+    pub utilities: Option<f64>,
+    pub groceries: Option<f64>,
+    pub transportation: Option<f64>,
+    pub insurance: Option<f64>,
+    pub subscriptions: Option<f64>,
+    pub other: Option<f64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct GpuStatus {
     pub gpu_detected: bool,
     pub cuda_build: bool,
@@ -538,6 +551,122 @@ Statement text:
     }
 
     Ok(fields)
+}
+
+pub async fn run_budget_inference(text: &str) -> Result<ExtractedBudget, String> {
+    let truncated = if text.len() > 10000 {
+        &text[..10000]
+    } else {
+        text
+    };
+
+    let prompt = format!(
+        r#"You are a financial data extraction assistant. Analyze this bank statement (checking or savings account) and extract monthly income and recurring expenses.
+
+Return ONLY a valid JSON object with these fields:
+- "income": Total monthly income — sum of direct deposits, payroll, and regular incoming transfers. If the statement covers multiple months, estimate the monthly average. (number or null)
+- "rent": Monthly rent or mortgage payment (number or null)
+- "utilities": Monthly utilities — electric, water, gas, internet, phone bills (number or null)
+- "groceries": Monthly grocery spending — supermarkets, food stores (number or null)
+- "transportation": Monthly transportation — gas stations, parking, tolls, public transit, ride shares (number or null)
+- "insurance": Monthly insurance payments — health, auto, life, renter's (number or null)
+- "subscriptions": Monthly subscriptions — streaming services, gym, software, memberships (number or null)
+- "other": Other significant recurring monthly expenses not in the above categories (number or null)
+
+Instructions:
+- Look at DEPOSITS/CREDITS for income, and DEBITS/WITHDRAWALS for expenses.
+- Only include recurring or regular transactions, not one-time purchases.
+- If the statement covers a partial month or multiple months, normalize to a monthly amount.
+- Round to the nearest dollar.
+- Do NOT include credit card payments as expenses (those are debt payments, not living expenses).
+- If you cannot determine a category, use null rather than guessing 0.
+
+Do not include any text outside the JSON object.
+
+Bank statement text:
+---
+{}
+---"#,
+        truncated
+    );
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(120))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let url = format!(
+        "http://127.0.0.1:{}/v1/chat/completions",
+        LLAMA_SERVER_PORT
+    );
+
+    let body = serde_json::json!({
+        "model": "local",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.1,
+        "max_tokens": 512,
+        "response_format": {"type": "json_object"}
+    });
+
+    let health_url = format!("http://127.0.0.1:{}/health", LLAMA_SERVER_PORT);
+    for _ in 0..30 {
+        if let Ok(resp) = client.get(&health_url).send().await {
+            if let Ok(health) = resp.json::<serde_json::Value>().await {
+                let status = health["status"].as_str().unwrap_or("");
+                if status == "ok" || status == "no slot available" {
+                    break;
+                }
+            }
+        }
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    }
+
+    let http_response = client
+        .post(&url)
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("Inference request failed: {}", e))?;
+
+    let response_text = http_response
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read inference response: {}", e))?;
+
+    let response: serde_json::Value = serde_json::from_str(&response_text)
+        .map_err(|e| format!("Failed to parse inference response: {}. Raw: {}", e, response_text))?;
+
+    if let Some(err) = response.get("error") {
+        return Err(format!("AI server error: {}", err));
+    }
+
+    let content = match &response["choices"][0]["message"]["content"] {
+        serde_json::Value::String(s) => s.clone(),
+        serde_json::Value::Null => {
+            return Err("AI returned empty response. The statement may be too long or unclear.".to_string());
+        }
+        _ => {
+            return Err(format!("Unexpected AI response format: {}", response_text));
+        }
+    };
+
+    let cleaned = content
+        .trim()
+        .trim_start_matches("```json")
+        .trim_start_matches("```")
+        .trim_end_matches("```")
+        .trim();
+
+    let budget: ExtractedBudget = serde_json::from_str(cleaned).map_err(|e| {
+        format!(
+            "Failed to parse AI output as JSON: {}. Raw output: {}",
+            e, content
+        )
+    })?;
+
+    Ok(budget)
 }
 
 pub fn get_gpu_status(data_dir: &Path, state: &LlmState) -> GpuStatus {

@@ -64,6 +64,25 @@ export function onDownloadProgress(
   });
 }
 
+// --- Bank statement extraction ---
+
+export interface ExtractedBudget {
+  income: number | null;
+  rent: number | null;
+  utilities: number | null;
+  groceries: number | null;
+  transportation: number | null;
+  insurance: number | null;
+  subscriptions: number | null;
+  other: number | null;
+}
+
+export async function extractBankStatement(
+  text: string
+): Promise<ExtractedBudget> {
+  return invoke("extract_bank_statement", { text });
+}
+
 // --- GPU types ---
 
 export interface GpuStatus {
@@ -82,12 +101,22 @@ export async function setGpuEnabled(enabled: boolean): Promise<void> {
 
 // --- Database types ---
 
+export interface SavedTier {
+  id: string;
+  label?: string | null;
+  balance: number;
+  apr: number;
+  promoExpirationDate?: string | null;
+  postPromoApr?: number | null;
+}
+
 export interface SavedAccount {
   id: string;
   name: string;
   balance: number;
   apr: number;
   minimumPayment: number;
+  tiers: SavedTier[];
 }
 
 export interface BudgetConfig {

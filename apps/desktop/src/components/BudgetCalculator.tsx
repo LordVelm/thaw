@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import type { ExtractedBudget } from "../lib/commands";
+import BankStatementUpload from "./BankStatementUpload";
 
 interface ExpenseCategory {
   key: string;
@@ -47,6 +49,8 @@ export default function BudgetCalculator({
     return result;
   });
   const [expanded, setExpanded] = useState(true);
+  const [showImport, setShowImport] = useState(false);
+  const [importDone, setImportDone] = useState(false);
 
   useEffect(() => {
     if (initialIncome && initialIncome > 0) {
@@ -91,6 +95,20 @@ export default function BudgetCalculator({
     onBudgetCalculated(availableForDebt);
   }
 
+  function handleBankExtracted(budget: ExtractedBudget) {
+    if (budget.income != null) setIncome(budget.income.toString());
+    const newExpenses: Record<string, string> = { ...expenses };
+    for (const cat of EXPENSE_CATEGORIES) {
+      const val = budget[cat.key as keyof ExtractedBudget];
+      if (typeof val === "number" && val > 0) {
+        newExpenses[cat.key] = val.toString();
+      }
+    }
+    setExpenses(newExpenses);
+    setShowImport(false);
+    setImportDone(true);
+  }
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-1">
@@ -102,10 +120,43 @@ export default function BudgetCalculator({
           {expanded ? "Collapse" : "Expand"}
         </button>
       </div>
-      <p className="text-xs text-gray-400 mb-5">
+      <p className="text-xs text-gray-400 mb-4">
         Start with what comes in, subtract what goes out. Whatever's left is
         your debt-fighting power.
       </p>
+
+      {showImport && (
+        <BankStatementUpload
+          onExtracted={handleBankExtracted}
+          onCancel={() => setShowImport(false)}
+        />
+      )}
+
+      {!showImport && !importDone && (
+        <button
+          onClick={() => setShowImport(true)}
+          className="text-xs text-brand-600 hover:text-brand-700 underline mb-4 block"
+        >
+          Import from a bank statement (PDF)
+        </button>
+      )}
+
+      {importDone && (
+        <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4 flex items-center justify-between">
+          <p className="text-xs text-green-700">
+            Imported — review the numbers below and adjust if needed.
+          </p>
+          <button
+            onClick={() => {
+              setImportDone(false);
+              setShowImport(true);
+            }}
+            className="text-xs text-green-600 hover:text-green-700 underline ml-2"
+          >
+            Try another
+          </button>
+        </div>
+      )}
 
       {expanded && (
         <>

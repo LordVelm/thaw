@@ -1,11 +1,37 @@
 export type Strategy = "avalanche" | "snowball";
 
+export interface BalanceTier {
+  id: string;
+  label?: string;
+  balance: number;
+  apr: number;
+  promoExpirationDate?: string;
+  postPromoApr?: number;
+}
+
 export interface DebtAccount {
   id: string;
   name: string;
   balance: number;
   apr: number;
   minimumPayment: number;
+  tiers: BalanceTier[];
+}
+
+export function ensureTiers(account: DebtAccount): DebtAccount {
+  if (account.tiers && account.tiers.length > 0) return account;
+  return {
+    ...account,
+    tiers: [{ id: "tier-1", balance: account.balance, apr: account.apr }],
+  };
+}
+
+export function normalizeAccount(account: DebtAccount): DebtAccount {
+  const totalBalance = account.tiers.reduce((s, t) => s + t.balance, 0);
+  const maxApr = account.tiers.length > 0
+    ? Math.max(...account.tiers.map((t) => t.apr))
+    : 0;
+  return { ...account, balance: totalBalance, apr: maxApr };
 }
 
 export interface PlanInput {

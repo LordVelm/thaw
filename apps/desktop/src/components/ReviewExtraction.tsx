@@ -91,12 +91,30 @@ export default function ReviewExtraction({
     }
 
     setError("");
+
+    // Build tiers from extraction data
+    const tiers = [];
+    if (isDeferred && !useDeferred) {
+      // User chose 0% promo — create a promo tier with expiration
+      tiers.push({
+        id: "tier-1",
+        label: "Promotional",
+        balance: b,
+        apr: 0,
+        promoExpirationDate: fields.deferredInterestEndDate ?? undefined,
+        postPromoApr: fields.deferredInterestApr ?? undefined,
+      });
+    } else {
+      tiers.push({ id: "tier-1", balance: b, apr: a });
+    }
+
     onConfirm({
       id: `card-${nextId++}`,
       name: cardName.trim(),
       balance: b,
       apr: a,
       minimumPayment: m,
+      tiers,
     });
   }
 

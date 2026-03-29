@@ -2,7 +2,7 @@ mod db;
 mod llm;
 
 use db::{BudgetConfig, DbState, SavedAccount};
-use llm::{ExtractedFields, GpuStatus, LlmState, SetupStatus};
+use llm::{ExtractedBudget, ExtractedFields, GpuStatus, LlmState, SetupStatus};
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -39,6 +39,20 @@ async fn extract_statement(
     llm::wait_for_server().await?;
 
     llm::run_inference(&text).await
+}
+
+#[tauri::command]
+async fn extract_bank_statement(
+    text: String,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, LlmState>,
+) -> Result<ExtractedBudget, String> {
+    let data_dir = llm::get_data_dir(&app);
+
+    llm::start_server(&data_dir, &state)?;
+    llm::wait_for_server().await?;
+
+    llm::run_budget_inference(&text).await
 }
 
 // --- GPU commands ---
@@ -117,6 +131,7 @@ pub fn run() {
             check_ai_setup,
             setup_ai,
             extract_statement,
+            extract_bank_statement,
             get_gpu_status,
             set_gpu_enabled,
             db_get_accounts,
