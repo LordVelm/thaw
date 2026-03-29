@@ -1,17 +1,41 @@
-# debt-planner-local
+# Thaw
 
-Local-first desktop app to ingest credit card statements, extract debt data, and generate deterministic avalanche/snowball payoff plans.
+Local-first debt payoff planner. Upload your credit card statements or type in your balances, set a budget, and get a clear month-by-month plan to become debt-free.
 
-## Monorepo layout
+Your data stays on your computer. Always.
 
-- `apps/desktop`: Tauri + React desktop UI
-- `packages/core-types`: shared data contracts
-- `packages/payoff-engine`: deterministic debt simulation logic
-- `services/extractor`: placeholder for local PDF/OCR/LLM extraction service
-- `docs`: architecture and math notes
+## Features
 
-## Current status
+- **PDF statement extraction** with local AI (Qwen2.5-3B via llama-server, no cloud)
+- **Manual entry** with multi-tier balance support (promo APR + standard APR)
+- **Budget calculator** with income/expense breakdown
+- **Avalanche vs Snowball** strategy comparison with month-by-month schedule
+- **GPU acceleration** with NVIDIA CUDA auto-detection, CPU fallback
 
-Initial scaffold with TypeScript workspaces and payoff engine package.
+## Tech stack
 
-**AI / collaborator handoff:** see [`CLAUDE.md`](./CLAUDE.md) for full context, stack, schema plans, and next steps.
+- **Desktop:** Tauri v2 + React 19 + TypeScript + Vite
+- **Styling:** Tailwind CSS
+- **Backend:** Rust (Tauri commands, SQLite, LLM management)
+- **AI:** llama.cpp (bundled, runs locally) + pdfjs-dist + Tesseract.js
+- **Math:** Deterministic payoff engine with CARD Act tier-aware payment allocation
+
+## Project structure
+
+```
+apps/desktop/          Tauri + React desktop app
+packages/core-types/   Shared TypeScript type definitions
+packages/payoff-engine/ Deterministic debt simulation logic (tested)
+```
+
+## Development
+
+```bash
+npm install
+cd apps/desktop
+npx tauri dev
+```
+
+## License
+
+MIT
