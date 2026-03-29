@@ -233,7 +233,7 @@ export default function AccountForm({ onAdd }: Props) {
         <button
           type="button"
           onClick={addTier}
-          className="text-xs text-brand-600 hover:text-brand-700 underline"
+          className="text-sm text-brand-600 hover:text-brand-700 underline py-2"
         >
           + Add another rate tier
         </button>
@@ -242,7 +242,7 @@ export default function AccountForm({ onAdd }: Props) {
       <button
         type="button"
         onClick={handleAdd}
-        className="bg-brand-600 text-white text-sm px-5 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-sm"
+        className="bg-brand-600 text-white text-sm px-5 py-2.5 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-sm"
       >
         Add account
       </button>

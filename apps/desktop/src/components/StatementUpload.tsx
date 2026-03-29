@@ -141,7 +141,7 @@ export default function StatementUpload({ onExtracted, onManual }: Props) {
 
       <button
         onClick={onManual}
-        className="text-sm text-gray-400 hover:text-gray-600 mt-3 underline"
+        className="text-sm text-gray-400 hover:text-gray-600 mt-3 underline py-2"
       >
         I'd rather type it in myself
       </button>

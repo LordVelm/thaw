@@ -206,7 +206,7 @@ export default function App() {
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="text-gray-300 hover:text-gray-500 text-xl p-2 rounded-lg hover:bg-warm-100 transition-colors"
+          className="text-gray-300 hover:text-gray-500 text-xl p-3 rounded-lg hover:bg-warm-100 transition-colors"
           title="Settings"
         >
           &#9881;
@@ -256,7 +256,7 @@ export default function App() {
             <AccountForm onAdd={addAccount} />
             <button
               onClick={() => setShowManualForm(false)}
-              className="text-sm text-gray-400 hover:text-gray-600 mt-3 underline"
+              className="text-sm text-gray-400 hover:text-gray-600 mt-3 underline py-2"
             >
               or upload a statement PDF
             </button>
