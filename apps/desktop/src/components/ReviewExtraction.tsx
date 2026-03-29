@@ -130,7 +130,7 @@ export default function ReviewExtraction({
   }
 
   const inputClass =
-    "border border-gray-200 rounded-lg px-3 py-2 mt-1 text-sm text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all";
+    "border border-gray-200 rounded-lg px-3 py-2 mt-1 text-base text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all";
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">

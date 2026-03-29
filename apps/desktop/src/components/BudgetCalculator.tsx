@@ -206,7 +206,7 @@ export default function BudgetCalculator({
                       value={expenses[cat.key] ?? ""}
                       onChange={(e) => handleExpense(cat.key, e.target.value)}
                       placeholder={cat.placeholder}
-                      className="border border-gray-200 rounded-lg px-2.5 py-1.5 w-full text-sm text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all"
+                      className="border border-gray-200 rounded-lg px-2.5 py-2 w-full text-base text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all"
                     />
                   </div>
                 </label>

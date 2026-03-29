@@ -35,7 +35,7 @@ export default function AccountForm({ onAdd }: Props) {
   const [error, setError] = useState("");
 
   const inputClass =
-    "border border-gray-200 rounded-lg px-2.5 py-2 mt-0.5 text-sm text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all";
+    "border border-gray-200 rounded-lg px-2.5 py-2 mt-0.5 text-base text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 outline-none transition-all";
 
   function updateTier(index: number, field: keyof TierInput, value: string) {
     setTiers((prev) =>
