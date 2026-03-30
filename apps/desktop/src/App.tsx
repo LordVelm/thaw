@@ -18,6 +18,7 @@ import BudgetCalculator from "./components/BudgetCalculator";
 import PlanResults from "./components/PlanResults";
 import SettingsPanel from "./components/SettingsPanel";
 import ThawLogo from "./components/ThawLogo";
+import TitleBar from "./components/TitleBar";
 
 type View = "loading" | "setup" | "main";
 
@@ -192,7 +193,9 @@ export default function App() {
   const hasAccounts = accounts.length > 0;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="flex flex-col h-screen">
+      <TitleBar />
+      <div className="max-w-3xl mx-auto px-6 py-8 flex-1 overflow-y-auto w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
@@ -386,6 +389,7 @@ export default function App() {
           your computer.
         </p>
       </footer>
+      </div>
     </div>
   );
 }
